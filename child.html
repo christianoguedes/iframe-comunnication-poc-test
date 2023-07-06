@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  </head>
+  <body>
+    <h1>Frame 1</h1>
+
+    <div id="loading">
+        <h3>Loading...</h3>
+      </div>
+    
+    <div id="completed" style="display:none">
+      <h3>Received Message:</h3>
+      <div id="placeholder"></div>
+    </div>
+    
+    <script>
+    
+      /* DEFINITIONS */
+      var parentWindow = window.parent;
+
+      class Message {
+        constructor(type, body, origin) {
+          this.type = type;
+          this.body = body;
+          this.origin = origin;
+        }
+      }
+
+      function sendMessage (payload) {
+        window.postMessage(payload, 'http://localhost:8000'); //change targetOrigin to http://stackspot.com
+      }
+      
+      /*
+      * RECEIVE MESSAGE FROM PARENT
+      */
+
+      window.addEventListener("message", (e) => {
+        var data = e.data;
+        console.log("RECEIVED message from PARENT TO CHILD", data);
+        
+        var type = data.type;
+        var body = data.body;
+
+        if(type === 'data') {
+          console.log()
+          document.getElementById("placeholder").innerText += JSON.stringify(body);
+        }
+
+      });
+
+      /* SHAKE HAND WITH PARENT */
+      //USE: componentDidMount in ReactJS
+      window.addEventListener("load", () => {
+        setTimeout(function () {
+            window.parent.postMessage(new Message("shakehand", true, location.protocol + '//' + location.host), '*')
+            console.log("Iframe Load completed! Sending load completed message.")
+            document.getElementById( 'loading' ).style.display = 'none';
+            document.getElementById( 'completed' ).style.display = null;
+            
+        }, 2000);
+      });
+
+    </script>
+  </body>
+</html>

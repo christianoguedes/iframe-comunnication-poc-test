@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <style>
+      iframe {
+        max-width: 100%;
+        width: 800px;
+        height: 300px;
+      }
+    </style>
+  </head>
+
+  <body>
+    
+    <h1>PORTAL - localhost:8000</h1>
+    
+    <h2>Frame 1 - localhost:8001</h2>
+    <ul id="localhost8001">
+      <li>1) - Automatic communication of the end of the loading of <strong>frame 2</strong> <br>
+         - Status: <strong class="status-1"> WAITING...</strong></li>
+      <li>
+        2) - Sending the token after loading: <br>
+        - Status: <strong class="status-2"> NOT STARTED...</strong>
+      </li>
+    </ul>
+    
+    <iframe id="frame-localhost8001" src="http://localhost:8001/child.html"></iframe>
+
+
+    <h2>Frame 2 - localhost:8002</h2>
+    <ul id="localhost8002">
+      <li>1) - Automatic communication of the end of the loading of <strong>frame 2</strong> <br>
+         - Status: <strong class="status-1"> WAITING...</strong></li>
+      <li>
+        2) - Sending the token after loading: <br>
+        - Status: <strong class="status-2"> NOT STARTED...</strong>
+      </li>
+    </ul>
+
+    <iframe id="frame-localhost8002" src="http://localhost:8002/child2.html"></iframe>
+    
+    <script>
+    
+      /* DEFINITIONS */
+
+      class Message {
+        constructor(type, body) {
+          this.type = type;
+          this.body = body;
+          this.origin = origin;
+        }
+      }
+
+      function getId(origin) {
+        return origin.replace(/.+\/\/|www.|\..|:|@+/g, '', '');
+      }
+
+      function getFrameId(origin) {
+        var id = getId(origin);
+        return 'frame-' + id;
+      }
+
+      /*
+      * RECEIVE MESSAGE FROM CHILD
+      */
+      window.addEventListener("message", (e) => {
+        var data = e.data;
+        console.log("RECEIVED message from CHILD TO PARENT", data);
+        
+        var type = data.type;
+        var body = data.body;
+        var origin = data.origin;
+
+        if(type === "shakehand" && body) {
+          console.log("SHAKEHAND RECEIVED FROM CHILD")
+          document.getElementById(getId(origin)).getElementsByClassName("status-1")[0].innerText = "DONE";
+
+          // console.log("SENDING userData TO CHILD...")
+          //SEND TOKEN
+          var userData=[{token:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJhYmNkMTIzIiwiZXhwaXJ5IjoxNjQ2NjM1NjExMzAxfQ.3Thp81rDFrKXr3WrY1MyMnNK8kKoZBX9lg-JwFznR-M", user: "email@example.com"}];
+          
+          var msg = new Message("data", userData, null);
+          var frame = document.getElementById(getFrameId(origin)).contentWindow;
+          frame.postMessage(msg,  origin);
+          document.getElementById(getId(origin)).getElementsByClassName("status-2")[0].innerText = "DONE";
+        }
+      });
+
+    </script>
+  </body>
+</html>
